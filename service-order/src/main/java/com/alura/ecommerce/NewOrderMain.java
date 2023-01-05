@@ -1,7 +1,7 @@
 package com.alura.ecommerce;
 
-import static com.alura.ecommerce.util.PublicConstants.ECOMMERCE_TOPIC;
-import static com.alura.ecommerce.util.PublicConstants.ECOMMERCE_TOPIC_SEND_EMAIL;
+import static com.alura.ecommerce.TopicConstants.ECOMMERCE_TOPIC;
+import static com.alura.ecommerce.TopicConstants.ECOMMERCE_TOPIC_SEND_EMAIL;
 
 import java.math.BigDecimal;
 import java.util.UUID;

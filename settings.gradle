@@ -1,2 +1,8 @@
 rootProject.name = 'KafkaProject'
+include 'service-email'
+include 'shared'
+include 'service-fraud-detector'
+include 'service-log'
+include 'service-order'
+include 'common-kafka'
 

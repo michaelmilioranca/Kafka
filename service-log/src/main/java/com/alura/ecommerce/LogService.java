@@ -1,9 +1,9 @@
 package com.alura.ecommerce;
 
-import static com.alura.ecommerce.util.PublicConstants.ECOMMERCE_ALL_TOPICS;
+import static com.alura.ecommerce.TopicConstants.ECOMMERCE_ALL_TOPICS;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 import java.util.regex.Pattern;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class LogService {
@@ -12,12 +12,11 @@ public class LogService {
     var logService = new LogService();
     try (var kafkaService =
         new KafkaService.Builder()
-            .groupId(FraudDetectorService.class.getSimpleName())
+            .groupId(LogService.class.getSimpleName())
             .patternTopic(Pattern.compile(ECOMMERCE_ALL_TOPICS))
             .parse(logService::parse)
             .type(String.class.getSimpleName())
-            .properties(
-                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, String.class.getSimpleName())
+            .properties(VALUE_DESERIALIZER_CLASS_CONFIG, String.class.getSimpleName())
             .build()) {
       kafkaService.run();
     }

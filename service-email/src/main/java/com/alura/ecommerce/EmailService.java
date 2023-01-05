@@ -1,6 +1,7 @@
 package com.alura.ecommerce;
 
-import com.alura.ecommerce.util.PublicConstants;
+import static com.alura.ecommerce.TopicConstants.ECOMMERCE_TOPIC_SEND_EMAIL;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class EmailService {
@@ -11,7 +12,7 @@ public class EmailService {
     try (var kafkaService =
         new KafkaService.Builder()
             .groupId(EmailService.class.getSimpleName())
-            .topic(PublicConstants.ECOMMERCE_TOPIC_SEND_EMAIL)
+            .topic(ECOMMERCE_TOPIC_SEND_EMAIL)
             .parse(emailService::parse)
             .type(Email.class.getSimpleName())
             .build()) {

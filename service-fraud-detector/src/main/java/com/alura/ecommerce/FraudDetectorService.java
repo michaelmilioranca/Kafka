@@ -1,7 +1,5 @@
 package com.alura.ecommerce;
 
-import static com.alura.ecommerce.util.PublicConstants.ECOMMERCE_TOPIC;
-
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class FraudDetectorService {
@@ -11,7 +9,7 @@ public class FraudDetectorService {
     try (var kafkaService =
         new KafkaService.Builder()
             .groupId(FraudDetectorService.class.getSimpleName())
-            .topic(ECOMMERCE_TOPIC)
+            .topic(TopicConstants.ECOMMERCE_TOPIC)
             .parse(fraudeDectectorService::parse)
             .type(Order.class.getSimpleName())
             .build()) {
