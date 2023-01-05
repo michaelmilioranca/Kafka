@@ -3,7 +3,7 @@ plugins {
     id 'com.github.sherter.google-java-format' version '0.9'
 }
 
-group 'org.example'
+group 'com.alura'
 version '1.0-SNAPSHOT'
 
 repositories {

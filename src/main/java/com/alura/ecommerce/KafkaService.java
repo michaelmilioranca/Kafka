@@ -3,32 +3,54 @@ package com.alura.ecommerce;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
-
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-public class KafkaService implements Closeable {
+public class KafkaService<T> implements Closeable {
 
-  private final KafkaConsumer<String, String> consumer;
+  private final KafkaConsumer<String, T> consumer;
   private final ConsumerFunction parse;
 
-  public KafkaService(final String groupId, final String topic, final ConsumerFunction parse) {
-    this(groupId, parse);
+  private KafkaService(
+      final String groupId,
+      final String topic,
+      final ConsumerFunction parse,
+      String type,
+      Map<String, String> overrideProperties) {
+    this(groupId, parse, type, overrideProperties);
     consumer.subscribe(Collections.singletonList(topic));
   }
 
-  public KafkaService(String groupId, Pattern topic, ConsumerFunction parse) {
-    this(groupId, parse);
+  private KafkaService(
+      final String groupId,
+      final Pattern topic,
+      final ConsumerFunction parse,
+      String type,
+      Map<String, String> overrideProperties) {
+    this(groupId, parse, type, overrideProperties);
     consumer.subscribe(topic);
   }
 
-  private KafkaService(String groupId, ConsumerFunction parse) {
-    this.consumer = new KafkaConsumer<>(getProperties(groupId));
-    this.parse = parse;
+  private KafkaService(
+      final String groupId,
+      final ConsumerFunction parse,
+      final String type,
+      Map<String, String> overrideProperties) {
+    try {
+      this.consumer =
+          new KafkaConsumer<>(
+              getProperties(groupId, (Class<T>) Class.forName(type), overrideProperties));
+      this.parse = parse;
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void run() {
@@ -45,7 +67,8 @@ public class KafkaService implements Closeable {
     }
   }
 
-  private static Properties getProperties(final String groupId) {
+  private Properties getProperties(
+      final String groupId, final Class<T> type, Map<String, String> overrideProperties) {
     var properties = new Properties();
     // Where the kafka is running
     properties.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");
@@ -54,7 +77,7 @@ public class KafkaService implements Closeable {
         ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
     // Class used to DESERIALIZE the value
     properties.setProperty(
-        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, GsonDeserializer.class.getName());
     // The group ID is neeeded and not often repeated between projects
     properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, groupId);
     // The client ID is showed when we use the --describe of the consumers it will be easier to
@@ -65,11 +88,72 @@ public class KafkaService implements Closeable {
     // record at time
     // This makes we commit each record we read instead of waiting them all to commit
     properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "1");
+    // This is a workaround to have a generic deserializer in our custom class GsonDeserializer
+    properties.setProperty(GsonDeserializer.TYPE_CONFIG, type.getName());
+    // Overrides the current configs to the desired ones
+    properties.putAll(overrideProperties);
     return properties;
   }
 
   @Override
   public void close() {
     consumer.close();
+  }
+
+  public static class Builder {
+    private String groupId;
+    private ConsumerFunction parse;
+    private String type;
+    private Map<String, String> overrideProperties = new HashMap<>();
+
+    private Pattern patternTopic;
+
+    private String topic;
+
+    public Builder() {}
+
+    public Builder groupId(final String groupId) {
+      this.groupId = groupId;
+      return this;
+    }
+
+    public Builder topic(final String topic) {
+      this.topic = topic;
+      return this;
+    }
+
+    public Builder patternTopic(final Pattern patternTopic) {
+      this.patternTopic = patternTopic;
+      return this;
+    }
+
+    public Builder parse(final ConsumerFunction parse) {
+      this.parse = parse;
+      return this;
+    }
+
+    public Builder type(final String type) {
+      this.type = type;
+      return this;
+    }
+
+    public Builder properties(final Map<String, String> overrideProperties) {
+      this.overrideProperties.putAll(overrideProperties);
+      return this;
+    }
+
+    public Builder properties(String key, String value) {
+      this.overrideProperties.put(key, value);
+      return this;
+    }
+
+    public KafkaService build() {
+      if (Objects.isNull(this.patternTopic)) {
+        return new KafkaService(
+            this.groupId, this.topic, this.parse, this.type, this.overrideProperties);
+      }
+      return new KafkaService(
+          this.groupId, this.patternTopic, this.parse, this.type, this.overrideProperties);
+    }
   }
 }

@@ -1,21 +1,25 @@
 package com.alura.ecommerce;
 
-import static com.alura.ecommerce.util.PublicConstants.ECOMMERCE_TOPIC_SEND_EMAIL;
-
+import com.alura.ecommerce.util.PublicConstants;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class EmailService {
 
   public static void main(String[] args) {
     var emailService = new EmailService();
+
     try (var kafkaService =
-        new KafkaService(
-            EmailService.class.getSimpleName(), ECOMMERCE_TOPIC_SEND_EMAIL, emailService::parse)) {
+        new KafkaService.Builder()
+            .groupId(EmailService.class.getSimpleName())
+            .topic(PublicConstants.ECOMMERCE_TOPIC_SEND_EMAIL)
+            .parse(emailService::parse)
+            .type(Email.class.getSimpleName())
+            .build()) {
       kafkaService.run();
     }
   }
 
-  private void parse(ConsumerRecord<String, String> record) {
+  private void parse(ConsumerRecord<String, Email> record) {
     System.out.println("---------------------------------------");
     System.out.println("Sending email...");
     System.out.println(record.key());
