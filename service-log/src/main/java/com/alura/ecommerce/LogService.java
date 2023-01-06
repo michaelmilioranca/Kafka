@@ -5,19 +5,27 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 
 import java.util.regex.Pattern;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 public class LogService {
 
   public static void main(String[] args) {
     var logService = new LogService();
     try (var kafkaService =
-        new KafkaService.Builder()
-            .groupId(LogService.class.getSimpleName())
-            .patternTopic(Pattern.compile(ECOMMERCE_ALL_TOPICS))
+        KafkaServiceCreator.groupId(LogService.class.getSimpleName())
+            .topic(Pattern.compile(ECOMMERCE_ALL_TOPICS))
             .parse(logService::parse)
-            .type(String.class.getSimpleName())
-            .properties(VALUE_DESERIALIZER_CLASS_CONFIG, String.class.getSimpleName())
-            .build()) {
+            .type(String.class)
+            .properties(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+            .create()
+    //        new KafkaService.Builder()
+    //            .groupId(LogService.class.getSimpleName())
+    //            .patternTopic(Pattern.compile(ECOMMERCE_ALL_TOPICS))
+    //            .parse(logService::parse)
+    //            .type(String.class)
+    //            .properties(VALUE_DESERIALIZER_CLASS_CONFIG, String.class.getSimpleName())
+    //            .build()
+    ) {
       kafkaService.run();
     }
   }

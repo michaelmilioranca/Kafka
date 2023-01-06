@@ -10,8 +10,6 @@ repositories {
 }
 
 dependencies {
-    implementation rootProject
-
     implementation project(':common-kafka')
     implementation group: 'org.apache.kafka', name: 'kafka_2.13', version: '3.3.1'
 

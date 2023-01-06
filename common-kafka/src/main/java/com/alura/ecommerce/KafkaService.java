@@ -18,21 +18,21 @@ public class KafkaService<T> implements Closeable {
   private final KafkaConsumer<String, T> consumer;
   private final ConsumerFunction parse;
 
-  private KafkaService(
+  protected KafkaService(
       final String groupId,
       final String topic,
       final ConsumerFunction parse,
-      String type,
+      final Class<T> type,
       Map<String, String> overrideProperties) {
     this(groupId, parse, type, overrideProperties);
     consumer.subscribe(Collections.singletonList(topic));
   }
 
-  private KafkaService(
+  protected KafkaService(
       final String groupId,
       final Pattern topic,
       final ConsumerFunction parse,
-      String type,
+      final Class<T> type,
       Map<String, String> overrideProperties) {
     this(groupId, parse, type, overrideProperties);
     consumer.subscribe(topic);
@@ -41,16 +41,10 @@ public class KafkaService<T> implements Closeable {
   private KafkaService(
       final String groupId,
       final ConsumerFunction parse,
-      final String type,
+      final Class<T> type,
       Map<String, String> overrideProperties) {
-    try {
-      this.consumer =
-          new KafkaConsumer<>(
-              getProperties(groupId, (Class<T>) Class.forName(type), overrideProperties));
-      this.parse = parse;
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
+    this.consumer = new KafkaConsumer<>(getProperties(groupId, type, overrideProperties));
+    this.parse = parse;
   }
 
   public void run() {
@@ -103,11 +97,9 @@ public class KafkaService<T> implements Closeable {
   public static class Builder {
     private String groupId;
     private ConsumerFunction parse;
-    private String type;
+    private Class type;
     private Map<String, String> overrideProperties = new HashMap<>();
-
     private Pattern patternTopic;
-
     private String topic;
 
     public Builder() {}
@@ -132,7 +124,7 @@ public class KafkaService<T> implements Closeable {
       return this;
     }
 
-    public Builder type(final String type) {
+    public Builder type(final Class type) {
       this.type = type;
       return this;
     }
@@ -150,10 +142,10 @@ public class KafkaService<T> implements Closeable {
     public KafkaService build() {
       if (Objects.isNull(this.patternTopic)) {
         return new KafkaService(
-            this.groupId, this.topic, this.parse, this.type, this.overrideProperties);
+            this.groupId, this.topic, this.parse, String.class, this.overrideProperties);
       }
       return new KafkaService(
-          this.groupId, this.patternTopic, this.parse, this.type, this.overrideProperties);
+          this.groupId, this.patternTopic, this.parse, String.class, this.overrideProperties);
     }
   }
 }

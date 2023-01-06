@@ -1,18 +1,25 @@
 package com.alura.ecommerce;
 
+import static com.alura.ecommerce.TopicConstants.ECOMMERCE_TOPIC;
+
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 public class FraudDetectorService {
 
   public static void main(String[] args) {
-    var fraudeDectectorService = new FraudDetectorService();
+    var fraudDectectorService = new FraudDetectorService();
     try (var kafkaService =
-        new KafkaService.Builder()
-            .groupId(FraudDetectorService.class.getSimpleName())
-            .topic(TopicConstants.ECOMMERCE_TOPIC)
-            .parse(fraudeDectectorService::parse)
-            .type(Order.class.getSimpleName())
-            .build()) {
+        //        new KafkaService.Builder()
+        //            .groupId(FraudDetectorService.class.getSimpleName())
+        //            .topic(TopicConstants.ECOMMERCE_TOPIC)
+        //            .parse(fraudDectectorService::parse)
+        //            .type(Order.class)
+        //            .build()
+        KafkaServiceCreator.groupId(FraudDetectorService.class.getSimpleName())
+            .topic(ECOMMERCE_TOPIC)
+            .parse(fraudDectectorService::parse)
+            .type(Order.class)
+            .create()) {
       kafkaService.run();
     }
   }
