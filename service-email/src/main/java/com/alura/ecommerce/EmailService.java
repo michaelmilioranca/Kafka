@@ -9,12 +9,6 @@ public class EmailService {
   public static void main(String[] args) {
     var emailService = new EmailService();
     try (var kafkaService =
-        //        new KafkaService.Builder()
-        //            .groupId(EmailService.class.getSimpleName())
-        //            .topic(ECOMMERCE_TOPIC_SEND_EMAIL)
-        //            .parse(emailService::parse)
-        //            .type(Email.class.getSimpleName())
-        //            .build()
         KafkaServiceCreator.groupId(EmailService.class.getSimpleName())
             .topic(ECOMMERCE_TOPIC_SEND_EMAIL)
             .parse(emailService::parse)

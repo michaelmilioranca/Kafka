@@ -9,12 +9,6 @@ public class FraudDetectorService {
   public static void main(String[] args) {
     var fraudDectectorService = new FraudDetectorService();
     try (var kafkaService =
-        //        new KafkaService.Builder()
-        //            .groupId(FraudDetectorService.class.getSimpleName())
-        //            .topic(TopicConstants.ECOMMERCE_TOPIC)
-        //            .parse(fraudDectectorService::parse)
-        //            .type(Order.class)
-        //            .build()
         KafkaServiceCreator.groupId(FraudDetectorService.class.getSimpleName())
             .topic(ECOMMERCE_TOPIC)
             .parse(fraudDectectorService::parse)

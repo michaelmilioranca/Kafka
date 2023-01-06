@@ -3,9 +3,7 @@ package com.alura.ecommerce;
 import java.io.Closeable;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -92,60 +90,5 @@ public class KafkaService<T> implements Closeable {
   @Override
   public void close() {
     consumer.close();
-  }
-
-  public static class Builder {
-    private String groupId;
-    private ConsumerFunction parse;
-    private Class type;
-    private Map<String, String> overrideProperties = new HashMap<>();
-    private Pattern patternTopic;
-    private String topic;
-
-    public Builder() {}
-
-    public Builder groupId(final String groupId) {
-      this.groupId = groupId;
-      return this;
-    }
-
-    public Builder topic(final String topic) {
-      this.topic = topic;
-      return this;
-    }
-
-    public Builder patternTopic(final Pattern patternTopic) {
-      this.patternTopic = patternTopic;
-      return this;
-    }
-
-    public Builder parse(final ConsumerFunction parse) {
-      this.parse = parse;
-      return this;
-    }
-
-    public Builder type(final Class type) {
-      this.type = type;
-      return this;
-    }
-
-    public Builder properties(final Map<String, String> overrideProperties) {
-      this.overrideProperties.putAll(overrideProperties);
-      return this;
-    }
-
-    public Builder properties(String key, String value) {
-      this.overrideProperties.put(key, value);
-      return this;
-    }
-
-    public KafkaService build() {
-      if (Objects.isNull(this.patternTopic)) {
-        return new KafkaService(
-            this.groupId, this.topic, this.parse, String.class, this.overrideProperties);
-      }
-      return new KafkaService(
-          this.groupId, this.patternTopic, this.parse, String.class, this.overrideProperties);
-    }
   }
 }
